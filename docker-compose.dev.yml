@@ -21,7 +21,7 @@ services:
       REDIS_HOST: redis
       CACHE_DRIVER: redis
       QUEUE_CONNECTION: redis
-      SESSION_DRIVER: cookie
+      SESSION_DRIVER: redis        
       
       MAIL_MAILER: log
       APP_DEBUG: "true"
