@@ -1,0 +1,104 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: saas_vendas_app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/node_modules
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: saas_vendas
+      DB_USERNAME: saas
+      DB_PASSWORD: saas
+      
+      REDIS_HOST: redis
+      CACHE_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: cookie
+      
+      MAIL_MAILER: log
+      APP_DEBUG: "true"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - saas_network
+
+  vite:
+    image: node:20-alpine
+    container_name: saas_vendas_vite
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "5173:5173"
+    working_dir: /var/www/html
+    command: sh -c "npm install && npm run dev"
+    environment:
+      VITE_HMRHOST: localhost
+      VITE_HMRPORT: 5173
+    networks:
+      - saas_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: saas_vendas_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: saas_vendas
+      MYSQL_USER: saas
+      MYSQL_PASSWORD: saas
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - saas_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: saas_vendas_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saas_network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: saas_vendas_worker
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/node_modules
+    command: php artisan queue:work --verbose --tries=3
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      REDIS_HOST: redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - saas_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  saas_network:
+    driver: bridge

@@ -1,0 +1,12 @@
+<template>
+  <input
+    type="checkbox"
+    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+    v-bind="$attrs"
+    :class="$attrs.class"
+  />
+</template>
+
+<script setup>
+// Componente checkbox simples - aceita todos props via $attrs
+</script>
