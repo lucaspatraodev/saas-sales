@@ -21,7 +21,8 @@ RUN apk add --no-cache \
     mariadb-connector-c \
     libxml2-dev \
     oniguruma-dev \
-    libzip-dev
+    libzip-dev \
+    $PHPIZE_DEPS
 
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
@@ -34,6 +35,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
         bcmath \
         gd \
         zip
+
+# 🔥 Redis (phpredis)
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
