@@ -33,6 +33,22 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function isAdminLoja()
+    {
+        return $this->role === 'admin_loja';
+    }
+
+    public function scopeByTenant($query)
+    {
+        return $query->where('tenant_id', $this->tenant_id);
+    }
+
+
     /**
      * Get the attributes that should be cast.
      *
