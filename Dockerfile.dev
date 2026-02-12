@@ -36,7 +36,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
         gd \
         zip
 
-# 🔥 Redis (phpredis)
 RUN pecl install redis \
     && docker-php-ext-enable redis
 
