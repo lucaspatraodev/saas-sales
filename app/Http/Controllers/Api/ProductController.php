@@ -7,12 +7,22 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    /**
+     * PRODUCT -> Get ALL  (Tenant filtered)
+     */
     public function index()
     {
-        return Product::with('tenant')
-            ->paginate(20);
+        return response()->json([
+            'success' => true,
+            'code' => 200,
+            'data' => Product::with('tenant')
+                ->paginate(20)
+        ]);
     }
 
+    /**
+     * PRODUCT -> Create
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -22,44 +32,69 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
         ]);
 
-        $validated['tenant_id'] = auth()->user()->tenant_id;
+        $product = Product::create($validated + [
+            'tenant_id' => auth()->user()->tenant_id
+        ]);
 
-        $product = Product::create($validated);
-
-        return response()->json($product, 201);
+        return response()->json([
+            'success' => true,
+            'code' => 201,
+            'data' => $product
+        ], 201);
     }
 
+    /**
+     * PRODUCT -> Get ESPECIFIC
+     */
     public function show(Product $product)
     {
-        if ($product->tenant_id !== auth()->user()->tenant_id) {
-            abort(403);
-        }
-        return $product;
+        return response()->json([
+            'success' => true,
+            'code' => 200,
+            'data' => $product
+        ]);
     }
 
+    /**
+     * PRODUCT -> Update
+     */
     public function update(Request $request, Product $product)
     {
-        if ($product->tenant_id !== auth()->user()->tenant_id) {
-            abort(403);
-        }
-
         $validated = $request->validate([
-            'name' => 'string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'numeric|min:0',
-            'stock' => 'integer|min:0',
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'price' => 'sometimes|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
         ]);
 
         $product->update($validated);
-        return $product;
+
+        return response()->json([
+            'success' => true,
+            'code' => 200,
+            'data' => $product
+        ]);
     }
 
+    /**
+     * PRODUCT -> Delete
+     */
     public function destroy(Product $product)
     {
         if ($product->tenant_id !== auth()->user()->tenant_id) {
-            abort(403);
+            return response()->json([
+                'success' => false,
+                'code' => 403,
+                'message' => 'Produto não pertence ao seu tenant'
+            ], 403);
         }
+
         $product->delete();
-        return response()->json(['message' => 'Produto deletado.']);
+
+        return response()->json([
+            'success' => true,
+            'code' => 200,
+            'message' => 'Produto deletado.'
+        ]);
     }
 }
