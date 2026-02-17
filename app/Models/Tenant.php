@@ -3,10 +3,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Tenant extends Model
 {
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = ['name', 'email'];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($tenant) {
+            if (empty($tenant->id)) {
+                $tenant->id = (string) Str::uuid();
+            }
+        });
+    }
 
     public function users(): HasMany
     {
