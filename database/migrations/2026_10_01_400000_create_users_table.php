@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->foreignId('tenant_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('role')->default('vendedor'); // admin_loja, vendedor
 
             $table->timestamp('email_verified_at')->nullable();
